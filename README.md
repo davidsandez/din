@@ -120,7 +120,7 @@ din -u https://example.com
 ### Con opciones
 
 ``` bash
-din https://example.com -i 60 -t 5 -v
+din https://example.com -i 60 -t 5
 ```
 
 ### Parámetros disponibles
@@ -131,7 +131,6 @@ din https://example.com -i 60 -t 5 -v
   Posicional           URL a monitorear                      ---
   `-i`, `--interval`   Intervalo entre requests (segundos)   120
   `-t`, `--timeout`    Timeout por request (segundos)        10
-  `-v`, `--verbose`    Muestra información detallada         false
 
 ------------------------------------------------------------------------
 

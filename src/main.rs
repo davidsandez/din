@@ -8,32 +8,31 @@ use tokio::time::{sleep, Duration};
 #[command(name = "din")]
 #[command(about = "CLI para realizar peticiones HTTP periódicas.")]
 struct Args {
-    url: Option<String>,
+    #[arg(value_name = "URL")]
+    url: String,
 
-    #[arg(short, long)]
-    u: Option<String>,
-
-    #[arg(short, long, default_value_t = 120)]
+    #[arg(
+        short,
+        long,
+        default_value_t = 120,
+        value_parser = clap::value_parser!(u64).range(1..)
+    )]
     interval: u64,
 
-    #[arg(short, long, default_value_t = 10)]
+    #[arg(
+        short,
+        long,
+        default_value_t = 10,
+        value_parser = clap::value_parser!(u64).range(1..)
+    )]
     timeout: u64,
-
-    #[arg(short, long)]
-    verbose: bool,
 }
 
 #[tokio::main]
 async fn main() {
     let args = Args::parse();
 
-    let url = match args.url.or(args.u) {
-        Some(u) => u,
-        None => {
-            eprintln!("Debe especificar una URL");
-            std::process::exit(1);
-        }
-    };
+    let url = args.url;
 
     println!("🚀 Iniciando monitoreo de: {}", url);
     println!("Presiona Ctrl+C para detener\n");
