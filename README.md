@@ -240,21 +240,6 @@ cargo test
 
 ---
 
-## 🔄 Continuous Integration
-
-The project uses GitHub Actions to automatically verify the codebase.
-
-The CI pipeline checks:
-
-- Code formatting with `cargo fmt --check`.
-- Static analysis with Clippy.
-- Automated tests with `cargo test`.
-- Release builds with `cargo build --release`.
-
-This helps ensure that changes remain formatted, lint-clean, testable, and buildable.
-
----
-
 ## 📄 License
 
 Din is released under the MIT License.
