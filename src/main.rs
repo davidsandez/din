@@ -6,7 +6,7 @@ use tokio::time::{sleep, Duration};
 
 #[derive(Parser, Debug)]
 #[command(name = "din")]
-#[command(about = "CLI para realizar peticiones HTTP periódicas.")]
+#[command(about = "CLI for making periodic HTTP requests.")]
 struct Args {
     #[arg(value_name = "URL")]
     url: String,
@@ -34,8 +34,10 @@ async fn main() {
 
     let url = args.url;
 
-    println!("🚀 Iniciando monitoreo de: {}", url);
-    println!("Presiona Ctrl+C para detener\n");
+    println!("🚀 Starting monitoring of: {}", url);
+    println!("⏱️  Interval: {} seconds", args.interval);
+    println!("⏳ Timeout: {} seconds", args.timeout);
+    println!("Press Ctrl+C to stop\n");
 
     let client = Client::builder()
         .timeout(Duration::from_secs(args.timeout))
@@ -49,7 +51,7 @@ async fn main() {
     loop {
         tokio::select! {
             _ = tokio::signal::ctrl_c() => {
-                println!("\n🛑 Señal recibida. Cerrando inmediatamente...");
+                println!("\n🛑 Signal received. Closing immediately...");
                 break;
             }
 
@@ -78,11 +80,15 @@ async fn main() {
                             );
                         }
                     }
-                    Err(_) => {
+                    Err(error) => {
                         error_count += 1;
+
                         println!(
-                            "❌ [{}] #{} ERROR/TIMEOUT",
-                            timestamp, request_count
+                            "❌ [{}] #{} ERROR - {} - {:.2}s",
+                            timestamp,
+                            request_count,
+                            error,
+                            elapsed
                         );
                     }
                 }
@@ -92,21 +98,21 @@ async fn main() {
         }
     }
 
-    println!("\n📊 Estadísticas finales:");
+    println!("\n📊 Final statistics:");
     println!("   Total: {}", request_count);
 
     if request_count > 0 {
         println!(
-            "   Exitosas: {} ({:.1}%)",
+            "   Success: {} ({:.1}%)",
             success_count,
             success_count as f64 / request_count as f64 * 100.0
         );
         println!(
-            "   Errores: {} ({:.1}%)",
+            "   Errors: {} ({:.1}%)",
             error_count,
             error_count as f64 / request_count as f64 * 100.0
         );
     }
 
-    println!("👋 Fin.");
+    println!("👋 END.");
 }

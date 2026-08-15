@@ -1,197 +1,276 @@
 # Din
 
-CLI ligera escrita en Rust para realizar peticiones HTTP periódicas a un
-endpoint.
+Lightweight CLI written in Rust for making periodic HTTP requests to an endpoint.
 
-Está pensada principalmente para mantener "despiertos" servidores web
-que entran en estado de suspensión automática en planes gratuitos, como
-ocurre en Render y otras plataformas similares.
+Din is primarily designed to keep web services awake when they are automatically suspended after periods of inactivity, as commonly happens on free-tier cloud platforms such as Render and similar services.
 
-------------------------------------------------------------------------
+---
 
-## 🚀 ¿Qué problema resuelve?
+## 🚀 What problem does it solve?
 
-Muchos proveedores cloud en planes gratuitos:
+Many cloud providers on free-tier plans may:
 
--   Suspenden la aplicación tras un período de inactividad.
--   Generan "cold starts" lentos cuando llega la siguiente petición.
--   Pueden tardar varios segundos en responder la primera request.
+- Suspend applications after a period of inactivity.
+- Introduce slow cold starts when the next request arrives.
+- Take several seconds to respond to the first request after being suspended.
 
-Din envía requests HTTP periódicas para:
+Din sends periodic HTTP requests to:
 
--   Mantener activo el proceso.
--   Evitar latencias por cold start.
--   Detectar caídas o errores del servicio.
+- Keep a service active.
+- Reduce cold-start latency.
+- Detect service failures and HTTP errors.
+- Provide basic availability and response-time statistics.
 
-------------------------------------------------------------------------
+---
 
-## ⚙️ ¿Qué hace exactamente?
+## ⚙️ What does it do?
 
--   Envía requests HTTP GET a una URL.
--   Lo hace en intervalos configurables.
--   Permite configurar timeout.
--   Muestra resultados en tiempo real.
--   Registra estadísticas.
--   Finaliza limpiamente con `Ctrl+C`.
+Din:
 
-------------------------------------------------------------------------
+- Sends HTTP GET requests to a configured URL.
+- Executes requests at configurable intervals.
+- Supports a configurable request timeout.
+- Displays request results in real time.
+- Tracks basic request statistics.
+- Handles `Ctrl+C` for graceful shutdown.
 
-## 📦 Instalación
+The first request is sent immediately after startup. Subsequent requests are performed after the configured interval.
 
-### Opción 1 --- Compilar desde el código fuente
+---
 
-Requisitos:
+## 📦 Installation
 
--   Rust instalado (https://rust-lang.org)
+### Option 1 — Build from source
 
-Clonar el repositorio:
+#### Requirements
 
-``` bash
-git clone https://github.com/tuusuario/din.git
+- Rust and Cargo installed.
+
+Clone the repository:
+
+```bash
+git clone https://github.com/davidsandez/din.git
 cd din
 ```
 
-Compilar:
+Build the release binary:
 
-``` bash
+```bash
 cargo build --release
 ```
 
-Instalar globalmente:
+Install globally:
 
-``` bash
+```bash
 cargo install --path .
 ```
 
-Esto lo deja disponible como comando global `din`.
+This makes `din` available as a global command.
 
-------------------------------------------------------------------------
+---
 
-### Opción 2 --- Compartir el binario compilado
+### Option 2 — Use the compiled binary
 
-Din compila como binario standalone.
+Din compiles into a standalone executable.
 
-Después de:
+After running:
 
-``` bash
+```bash
 cargo build --release
 ```
 
-El ejecutable estará en:
+the executable will be available at:
 
-``` bash
+```text
 target/release/din
 ```
 
-Podés:
+You can copy the binary to another machine, upload it to a server, or install it manually.
 
--   Copiarlo a `/usr/local/bin`
--   Subirlo a un servidor
--   Compartirlo directamente como archivo
+For example:
 
-Ejemplo instalación manual:
-
-``` bash
+```bash
 sudo cp target/release/din /usr/local/bin/
 ```
 
-------------------------------------------------------------------------
+---
 
-## ▶️ Uso
+## ▶️ Usage
 
-### Forma básica
+### Basic usage
 
-``` bash
+```bash
 din https://example.com
 ```
 
-Esto enviará requests cada 120 segundos (default).
+By default, Din sends a request every 120 seconds.
 
-------------------------------------------------------------------------
+### With options
 
-### Forma explícita
-
-``` bash
-din -u https://example.com
-```
-
-------------------------------------------------------------------------
-
-### Con opciones
-
-``` bash
+```bash
 din https://example.com -i 60 -t 5
 ```
 
-### Parámetros disponibles
+The equivalent long-form command is:
 
-  Opción               Descripción                           Default
-  -------------------- ------------------------------------- ---------
-  `-u`, `--u`          URL a monitorear                      ---
-  Posicional           URL a monitorear                      ---
-  `-i`, `--interval`   Intervalo entre requests (segundos)   120
-  `-t`, `--timeout`    Timeout por request (segundos)        10
-
-------------------------------------------------------------------------
-
-## 📊 Ejemplo de salida
-
-``` text
-🚀 Iniciando monitoreo de: https://example.com
-⏱️  Intervalo: 60 segundos
-⏳ Timeout: 5 segundos
-============================================================
-Presiona Ctrl+C para detener el monitoreo
-
-✅ [2026-02-21 14:32:10] Petición #1: OK - Tiempo: 0.21s
+```bash
+din https://example.com --interval 60 --timeout 5
 ```
 
-Al detener con Ctrl+C:
+### Available options
 
-``` text
-============================================================
-🛑 Monitoreo detenido por el usuario
-============================================================
-📊 Estadísticas:
-   • Total de peticiones: 15
-   • Exitosas: 15 (100.0%)
-   • Con errores: 0 (0.0%)
-============================================================
-👋 ¡Hasta luego!
+|Option|Description|Default|
+|---|---|---|
+|Positional `URL`|URL to monitor|Required|
+|`-i`, `--interval`|Interval between requests, in seconds|`120`|
+|`-t`, `--timeout`|Request timeout, in seconds|`10`|
+
+Both `interval` and `timeout` must be greater than zero.
+
+You can also display the available options with:
+
+```bash
+din --help
 ```
 
-------------------------------------------------------------------------
+---
 
-## 🧠 Casos de uso típicos
+## 📊 Example output
 
--   Mantener activo un backend en Render.
--   Mantener despierta una API en Railway.
--   Evitar cold starts en aplicaciones serverless.
--   Supervisión básica de disponibilidad.
--   Testeo manual de estabilidad.
+When Din starts:
 
-------------------------------------------------------------------------
+```text
+🚀 Starting monitoring of: https://example.com
+⏱️  Interval: 60 seconds
+⏳ Timeout: 5 seconds
+Press Ctrl+C to stop
 
-## 🔒 Consideraciones
+✅ [2026-02-21 14:32:10] #1 OK - 0.21s
+```
 
--   No reemplaza un sistema de monitoreo profesional.
--   No incluye alertas.
--   No reintenta dentro del mismo ciclo.
--   No paraleliza requests.
+When the server responds with a non-successful HTTP status:
 
-Es una herramienta simple, determinística y transparente.
+```text
+⚠️  [2026-02-21 14:33:10] #2 HTTP 500 Internal Server Error - 0.18s
+```
 
-------------------------------------------------------------------------
+When a request fails:
 
-## 📌 Filosofía
+```text
+❌ [2026-02-21 14:34:10] #3 ERROR - error sending request - 5.01s
+```
 
-Din es:
+When Din receives `Ctrl+C`:
 
--   Minimalista
--   Binario único
--   Sin dependencias externas en runtime
--   Fácil de distribuir
--   Predecible
+```text
+🛑 Signal received. Closing immediately...
 
-Ideal para desarrolladores que quieren algo directo, sin infraestructura
-adicional.
+📊 Final statistics:
+   Total: 15
+   Success: 15 (100.0%)
+   Errors: 0 (0.0%)
+👋 END.
+```
+
+---
+
+## 🧠 Typical use cases
+
+- Keep a backend service active on Render.
+- Keep an API awake on Railway.
+- Reduce cold starts on services that suspend after inactivity.
+- Perform basic HTTP availability checks.
+- Manually test service stability and response times.
+
+---
+
+## 🔒 Limitations
+
+Din is intentionally simple and is not intended to replace a professional monitoring system.
+
+It currently:
+
+- Does not provide alerts or notifications.
+- Does not retry failed requests within the same cycle.
+- Does not perform requests in parallel.
+- Does not provide persistent monitoring history.
+- Only performs HTTP GET requests.
+
+Din is designed to be simple, deterministic, and transparent.
+
+---
+
+## 🛠️ Development
+
+Check the project:
+
+```bash
+cargo check
+```
+
+Format the code:
+
+```bash
+cargo fmt
+```
+
+Verify formatting without modifying files:
+
+```bash
+cargo fmt --check
+```
+
+Run Clippy with warnings treated as errors:
+
+```bash
+cargo clippy --all-targets --all-features -- -D warnings
+```
+
+Build the release binary:
+
+```bash
+cargo build --release
+```
+
+Run the test suite:
+
+```bash
+cargo test
+```
+
+---
+
+## 🔄 Continuous Integration
+
+The project uses GitHub Actions to automatically verify the codebase.
+
+The CI pipeline checks:
+
+- Code formatting with `cargo fmt --check`.
+- Static analysis with Clippy.
+- Automated tests with `cargo test`.
+- Release builds with `cargo build --release`.
+
+This helps ensure that changes remain formatted, lint-clean, testable, and buildable.
+
+---
+
+## 📄 License
+
+Din is released under the MIT License.
+
+See the `LICENSE` file for the complete license text.
+
+---
+
+## 📌 Philosophy
+
+Din is built around a few simple principles:
+
+- **Minimal** — focused on one specific task.
+- **Lightweight** — distributed as a single Rust binary.
+- **Deterministic** — predictable execution and configuration.
+- **Transparent** — request results and statistics are displayed directly in the terminal.
+- **Easy to distribute** — no runtime infrastructure is required.
+
+Din is intended for developers who need a straightforward way to perform periodic HTTP checks without deploying additional monitoring infrastructure.
